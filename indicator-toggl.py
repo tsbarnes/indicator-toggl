@@ -54,8 +54,12 @@ class IndicatorToggl:
 
         if entry == None:
             self.app_indicator.set_status(AppIndicator3.IndicatorStatus.ACTIVE)
+            self.start_item.show()
+            self.stop_item.hide()
         else:
             self.app_indicator.set_status(AppIndicator3.IndicatorStatus.ATTENTION)
+            self.start_item.hide()
+            self.stop_item.show()
 
         return True
 
@@ -74,6 +78,8 @@ class IndicatorToggl:
                 entry.set('project', project_model[project_iter][0])
             entry.start()
             self.app_indicator.set_status(AppIndicator3.IndicatorStatus.ATTENTION)
+            self.start_item.hide()
+            self.stop_item.show()
             friendly_time = DateAndTime().format_time(DateAndTime().parse_iso_str(entry.get('start')))
             self.notify('%s started at %s' % (entry.get('description'), friendly_time))
 
@@ -88,10 +94,14 @@ class IndicatorToggl:
 
             Logger.debug(entry.json())
             self.app_indicator.set_status(AppIndicator3.IndicatorStatus.ACTIVE)
+            self.start_item.show()
+            self.stop_item.hide()
             friendly_time = DateAndTime().format_time(DateAndTime().parse_iso_str(entry.get('stop')))
             self.notify('%s stopped at %s' % (entry.get('description'), friendly_time))
         else:
             self.app_indicator.set_status(AppIndicator3.IndicatorStatus.ACTIVE)
+            self.start_item.show()
+            self.stop_item.hide()
             self.notify("You're not working on anything right now.")
 
     def quit(self, widget, data=None):
