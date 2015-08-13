@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 """
 indicator-toggl.py
 
@@ -18,9 +18,11 @@ import signal
 from gi.repository import GObject, Gtk, AppIndicator3, Notify
 
 from pytoggl.utility import Singleton, Config, DateAndTime, Logger
-from pytoggl.toggl import ClientList, ProjectList, TimeEntry, TimeEntryList, User
+from pytoggl.toggl import (
+    ClientList, ProjectList, TimeEntry, TimeEntryList, User)
 
 APP_ID = 'indicator-toggl'
+
 
 class IndicatorToggl:
     """
@@ -41,7 +43,8 @@ class IndicatorToggl:
         """
         Displays a desktop notification.
         """
-        notification = Notify.Notification.new('Toggl', message, 'toggldesktop')
+        notification = Notify.Notification.new('Toggl', message,
+                                               'toggldesktop')
         notification.show()
 
     def update(self, data=None):
@@ -52,12 +55,14 @@ class IndicatorToggl:
         TimeEntryList().reload()
         entry = TimeEntryList().now()
 
-        if entry == None:
-            self.app_indicator.set_status(AppIndicator3.IndicatorStatus.ACTIVE)
+        if entry is None:
+            self.app_indicator.set_status(
+                AppIndicator3.IndicatorStatus.ACTIVE)
             self.start_item.show()
             self.stop_item.hide()
         else:
-            self.app_indicator.set_status(AppIndicator3.IndicatorStatus.ATTENTION)
+            self.app_indicator.set_status(
+                AppIndicator3.IndicatorStatus.ATTENTION)
             self.start_item.hide()
             self.stop_item.show()
 
@@ -73,15 +78,18 @@ class IndicatorToggl:
         if response == Gtk.ResponseType.OK:
             project_iter = self.project_combo.get_active_iter()
             entry = TimeEntry(description=self.timer_entry.get_text())
-            if project_iter != None:
+            if project_iter is not None:
                 project_model = self.project_combo.get_model()
                 entry.set('project', project_model[project_iter][0])
             entry.start()
-            self.app_indicator.set_status(AppIndicator3.IndicatorStatus.ATTENTION)
+            self.app_indicator.set_status(
+                AppIndicator3.IndicatorStatus.ATTENTION)
             self.start_item.hide()
             self.stop_item.show()
-            friendly_time = DateAndTime().format_time(DateAndTime().parse_iso_str(entry.get('start')))
-            self.notify('%s started at %s' % (entry.get('description'), friendly_time))
+            friendly_time = DateAndTime().format_time(
+                DateAndTime().parse_iso_str(entry.get('start')))
+            self.notify('%s started at %s' % (entry.get('description'),
+                                              friendly_time))
 
     def stop_timer(self, widget, data=None):
         """
@@ -89,15 +97,17 @@ class IndicatorToggl:
         """
         entry = TimeEntryList().now()
 
-        if entry != None:
+        if entry is not None:
             entry.stop()
 
             Logger.debug(entry.json())
             self.app_indicator.set_status(AppIndicator3.IndicatorStatus.ACTIVE)
             self.start_item.show()
             self.stop_item.hide()
-            friendly_time = DateAndTime().format_time(DateAndTime().parse_iso_str(entry.get('stop')))
-            self.notify('%s stopped at %s' % (entry.get('description'), friendly_time))
+            friendly_time = DateAndTime().format_time(
+                DateAndTime().parse_iso_str(entry.get('stop')))
+            self.notify('%s stopped at %s' % (entry.get('description'),
+                                              friendly_time))
         else:
             self.app_indicator.set_status(AppIndicator3.IndicatorStatus.ACTIVE)
             self.start_item.show()
@@ -117,11 +127,16 @@ class IndicatorToggl:
         """
         self.app_id = app_id
         Notify.init(app_id)
-        self.app_indicator = AppIndicator3.Indicator.new(app_id, 'toggl_stopped', AppIndicator3.IndicatorCategory.APPLICATION_STATUS)
+        self.app_indicator = AppIndicator3.Indicator.new(
+            app_id, 'toggl_stopped',
+            AppIndicator3.IndicatorCategory.APPLICATION_STATUS)
         self.app_indicator.set_status(AppIndicator3.IndicatorStatus.ACTIVE)
         self.app_indicator.set_attention_icon('toggl_running')
 
-        self.timer_dialog = Gtk.Dialog('Toggl Timer', None, Gtk.DialogFlags.MODAL, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OK, Gtk.ResponseType.OK))
+        self.timer_dialog = Gtk.Dialog(
+            'Toggl Timer', None, Gtk.DialogFlags.MODAL,
+            (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+             Gtk.STOCK_OK, Gtk.ResponseType.OK))
         timer_label = Gtk.Label('What are you working on?')
         self.timer_dialog.vbox.pack_start(timer_label, False, False, 0)
         timer_label.show()
@@ -133,7 +148,8 @@ class IndicatorToggl:
         for project in ProjectList():
             self.project_liststore.append([project['id'], project['name']])
 
-        self.project_combo = Gtk.ComboBox.new_with_model(self.project_liststore)
+        self.project_combo = Gtk.ComboBox.new_with_model(
+            self.project_liststore)
         renderer_text = Gtk.CellRendererText()
         self.project_combo.pack_start(renderer_text, True)
         self.project_combo.add_attribute(renderer_text, "text", 1)
